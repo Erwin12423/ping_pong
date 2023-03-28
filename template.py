@@ -34,9 +34,9 @@ class Player(GameSprite):
    def update_r(self):
         keys = key.get_pressed()
         if keys[K_UP] and self.rect.y > 5:
-            self.rect.y += self.speed
-        if keys[K_DOWN] and self.rect.y < win_height - 80:
             self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < win_height - 80:
+            self.rect.y += self.speed
 
 
 '''
@@ -53,6 +53,9 @@ window = display.set_mode((win_width, win_height))
 
 back = (200, 255, 255) #Color code in RGB
 window.fill(back)
+font.init()
+
+font = font.Font(None, 80)
 
 
 
@@ -80,6 +83,13 @@ Step 5: Create 1 font (size >35) and 2 texts to display the losing of 2 players:
         - Coordinate: (180, 0, 0)
 '''
 
+lose1text = font.render("Player1 lose" , 1 , (180, 0, 0))
+lose2text = font.render("Player2 lose" , 1 , (180, 0, 0))
+
+
+window.blit(lose1text, (10, 50))
+window.blit(lose2text, (10, 50))
+
 speed_x = 3
 speed_y = 3
 
@@ -96,13 +106,16 @@ while game:
     Step 7: Quit events 
     '''
     for e in event.get():
-        if e.type == quit:
-            run = False
+        if e.type == QUIT:
+            game = False
 
     
     if finish != True:
+
+        window.fill(back)
         '''
-        Step 8: Update the rackets and the ball    
+        Step 8: Update the rackets and the ball 
+
         '''
         racket1.update_1()
         racket2.update_r()
@@ -115,18 +128,35 @@ while game:
         Step 9: Check collision between the rackets and the ball.
         If true, multiply speed_x by -1 and speed_y by 1.   
         '''
+        sprite.collide_rect(racket1, ball)
+        sprite.collide_rect(racket2, ball)
+
+        if sprite.collide_rect(racket1, ball) == True or sprite.collide_rect(racket2, ball) == True:
+            speed_x = speed_x * -1
+            speed_y = speed_y * -1
+
+        
 
         '''
         Step 10: Check collision between the ball and the top/bottom edges.
-        If true, multiply speed_y by -1.   
+        If true, multiply speed_y by -1. 
         '''    
+        if ball.rect.y < 25 or ball.rect.y > win_height - 25:
+            speed_y = speed_y * -1
+
 
         '''
         Step 11: Check collision between the ball and the left edge.
         If true:
             - Finish the game
             - Appear the lose1text at the middle   
+
         '''
+        
+
+        if ball.rect.x < 0 :
+            finish = True
+            window.blit(lose1text, (150, 200))
 
         '''
         Step 12: Check collision between the ball and the right edge.
@@ -134,6 +164,9 @@ while game:
             - Finish the game
             - Appear the lose2text at the middle   
         '''
+        if ball.rect.x > win_width:
+            finish = True
+            window.blit(lose2text, (150, 200))
 
         '''
         Step 13: Reset the rackets and the ball    
